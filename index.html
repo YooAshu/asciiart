@@ -9,16 +9,23 @@
 </head>
 
 <body>
-  <div id = "options">
-  <input type="range" id="cellsizerange" min="5" max="30">
+  <div id="options">
+    <input type="range" id="cellsizerange" min="5" max="30">
     <div id="opt2">
       <input type="checkbox" id="color">
         <label for="color">color</label><br>
         <input type="checkbox" id="bandw">
         <label for="bandw">black & white</label><br>
     </div>
-     <input type="file" id="fileinput">
-    
+    <input type="file" id="fileinput">
+
+
+  </div>
+  <div id="downloadButton">
+    <button onclick="downloadImage()">
+      <!-- downloadImage() -->
+      Download
+    </button>
   </div>
   <canvas id="canvas"></canvas>
   <script src="script.js"></script>

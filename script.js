@@ -3,8 +3,9 @@ image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+ZpjcA
 
 let canvas = document.getElementById('canvas')
 let ctx = canvas.getContext('2d', { willReadFrequently: true })
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+let imageScale = 3
+canvas.width = imageScale * window.innerWidth
+canvas.height = imageScale * window.innerHeight
 let scannedpixelsmatrix = []
 let particlesarray = []
 let imagex, imagey, cellsize, pixels, file, reader, aspectratio
@@ -32,19 +33,22 @@ image.addEventListener('load', function() {
   image.width = image.naturalWidth
   image.height = image.naturalHeight
   aspectratio = image.width / image.height
-  imagex = window.innerWidth / 2 - image.width / 2
-  imagey = window.innerHeight / 2 - image.height / 2
+  imagex = (window.innerWidth / 2 - image.width / 2)
+  imagey = (window.innerHeight / 2 - image.height / 2)
 
   checksize()
 
+  imagex *= 3
+  imagey *= 3
+  image.width *= 3
+  image.height *= 3
   scanimage()
-
 
 })
 function checksize() {
   if (image.width <= window.innerWidth && image.height <= window.innerHeight) {
-    imagex = window.innerWidth / 2 - image.width / 2
-    imagey = window.innerHeight / 2 - image.height / 2
+    imagex = (window.innerWidth / 2 - image.width / 2)
+    imagey = (window.innerHeight / 2 - image.height / 2)
 
 
   }
@@ -52,34 +56,34 @@ function checksize() {
   else if (image.width > window.innerWidth && image.height > window.innerHeight) {
 
     if (window.innerWidth < window.innerHeight) {
-      image.width = canvas.width
-      image.height = canvas.width / aspectratio
+      image.width = window.innerWidth
+      image.height = image.width / aspectratio
       imagex = 0
-      imagey = window.innerHeight / 2 - image.height / 2
+      imagey = (window.innerHeight / 2 - image.height / 2)
     }
     else {
 
-      image.width = canvas.height * aspectratio
-      image.height = canvas.height
-      imagex = window.innerWidth / 2 - image.width / 2
+      image.height = window.innerHeight
+      image.width = image.height * aspectratio
+      imagex = (window.innerWidth / 2 - image.width / 2)
       imagey = 0
     }
 
 
   }
   else if (image.width > window.innerWidth && image.height <= window.innerHeight) {
-    console.log('image.width > window.innerWidth')
-    image.width = canvas.width
-    image.height = canvas.width / aspectratio
+
+    image.width = window.innerWidth
+    image.height = image.width / aspectratio
     imagex = 0
-    imagey = window.innerHeight / 2 - image.height / 2
+    imagey = (window.innerHeight / 2 - image.height / 2)
 
 
   }
   else if (image.height > window.innerHeight && image.width <= window.innerWidth) {
-    image.width = canvas.height * aspectratio
-    image.height = canvas.height
-    imagex = window.innerWidth / 2 - image.width / 2
+    image.height = window.innerHeight
+    image.width = image.height * aspectratio
+    imagex = (window.innerWidth / 2 - image.width / 2)
     imagey = 0
 
 
@@ -89,9 +93,9 @@ function scanimage() {
   ctx.drawImage(image, imagex, imagey, image.width, image.height)
   pixels = ctx.getImageData(imagex, imagey, image.width, image.height)
   ctx.clearRect(imagex, imagey, image.width, image.height)
-  for (let y = 0; y < image.height; y += cellsize) {
+  for (let y = 0; y < image.height; y += cellsize * imageScale) {
     let row = []
-    for (let x = 0; x < image.width; x += cellsize) {
+    for (let x = 0; x < image.width; x += cellsize * imageScale) {
       let red = pixels.data[(y * 4 * image.width) + x * 4]
       let green = pixels.data[(y * 4 * image.width) + x * 4 + 1]
       let blue = pixels.data[(y * 4 * image.width) + x * 4 + 2]
@@ -129,22 +133,22 @@ class particle {
   }
   draw() {
     if (color.checked) {
-      ctx.font = `${cellsize}px Comic Sans MS`;
+      ctx.font = `${cellsize * imageScale}px Comic Sans MS`;
       ctx.fillStyle = 'rgba(208, 208, 208, 0.8)'
       ctx.textAlign = "center";
       ctx.fillText(this.symbol, this.x + 0.1, this.y);
-      ctx.font = `${cellsize}px Comic Sans MS`;
+      ctx.font = `${cellsize * imageScale}px Comic Sans MS`;
       ctx.fillStyle = this.color
       ctx.textAlign = "center";
       ctx.fillText(this.symbol, this.x, this.y);
 
     }
     else if (bandw.checked) {
-      ctx.font = `${cellsize}px Comic Sans MS`;
+      ctx.font = `${cellsize * imageScale}px Comic Sans MS`;
       ctx.fillStyle = 'rgba(208, 208, 208, 0.8)'
       ctx.textAlign = "center";
       ctx.fillText(this.symbol, this.x + 0.1, this.y);
-      ctx.font = `${cellsize}px Comic Sans MS`;
+      ctx.font = `${cellsize * imageScale}px Comic Sans MS`;
       ctx.fillStyle = this.gray
       ctx.textAlign = "center";
       ctx.fillText(this.symbol, this.x, this.y);
@@ -160,9 +164,9 @@ function brightnesstosymbol(g) {
   else if (g > 0.60) return "%"
   else if (g > 0.50) return "$"
   else if (g > 0.40) return "?"
-  else if (g > 0.30) return "="
-  else if (g > 0.20) return "*"
-  else if (g > 0.10) return "+"
+  else if (g > 0.30) return "*"
+  else if (g > 0.20) return "+"
+  else if (g > 0.10) return "^"
   else return ","
 }
 
@@ -203,3 +207,31 @@ fileinput.addEventListener('change', e => {
 
 }
 )
+function downloadImage() {
+  image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+  var link = document.createElement('a');
+  link.download = "ascii-art.png";
+  link.href = image;
+  link.click();
+}
+window.addEventListener('resize', function() {
+  canvas.width = imageScale * window.innerWidth
+  canvas.height = imageScale * window.innerHeight
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  scannedpixelsmatrix = []
+  particlesarray = []
+
+  image.width = image.naturalWidth
+  image.height = image.naturalHeight
+  aspectratio = image.width / image.height
+  imagex = (window.innerWidth / 2 - image.width / 2)
+  imagey = (window.innerHeight / 2 - image.height / 2)
+
+  checksize()
+
+  imagex *= 3
+  imagey *= 3
+  image.width *= 3
+  image.height *= 3
+  scanimage()
+})
